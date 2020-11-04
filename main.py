@@ -2,7 +2,7 @@
 from cdk8s import App, Chart
 from constructs import Construct
 
-from imports import k8s
+from webservice import WebService
 
 
 class MyChart(Chart):
@@ -11,42 +11,8 @@ class MyChart(Chart):
 
         # define resources here
 
-        label = {"app": "hello-k8s"}
-
-        k8s.Service(
-            self,
-            "service",
-            spec=k8s.ServiceSpec(
-                type="LoadBalancer",
-                ports=[
-                    k8s.ServicePort(
-                        port=80, target_port=k8s.IntOrString.from_number(8080)
-                    )
-                ],
-                selector=label,
-            ),
-        )
-
-        k8s.Deployment(
-            self,
-            "deployment",
-            spec=k8s.DeploymentSpec(
-                replicas=2,
-                selector=k8s.LabelSelector(match_labels=label),
-                template=k8s.PodTemplateSpec(
-                    metadata=k8s.ObjectMeta(labels=label),
-                    spec=k8s.PodSpec(
-                        containers=[
-                            k8s.Container(
-                                name="hello-kubernetes",
-                                image="paulbouwer/hello-kubernetes:1.7",
-                                ports=[k8s.ContainerPort(container_port=8080)],
-                            )
-                        ]
-                    ),
-                ),
-            ),
-        )
+        WebService(self, "hello", image="paulbouwer/hello-kubernetes:1.7", replicas=2)
+        WebService(self, "ghost", image="ghost", container_port=2368)
 
 
 app = App()
